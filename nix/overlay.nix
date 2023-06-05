@@ -68,7 +68,10 @@ in
         };
       eval = final.evalNixOSConfig {
         pkgs = final;
-        modules = [ smos-module ];
+        modules = [
+          smos-module
+          { system.stateVersion = "23.05"; }
+        ];
       };
     in
     (final.nixosOptionsDoc {
@@ -87,6 +90,7 @@ in
         pkgs = final;
         modules = [
           { config._module.check = false; }
+          { system.stateVersion = "23.05"; }
           smos-module
         ];
       };

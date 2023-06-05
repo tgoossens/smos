@@ -23,10 +23,8 @@ let
   api-port = 8002;
   web-port = 8003;
 
-
   # E2E testing configuration
   e2eTestingModule = flakeOverTest.nixosModules.${system}.e2eTest;
-
 
   # Client side configuration
   clientModule = flakeUnderTest.homeManagerModules.${system}.default;
@@ -289,8 +287,8 @@ in
       imports = [
         home-manager
       ];
-      system.stateVersion = "23.05";
       users.users = mapAttrs makeTestUser testUsers;
+      system.stateVersion = "23.05";
       system.activationScripts = {
         # We must enable lingering so that the Systemd User D-Bus is enabled.
         # We also cannot do this with loginctl enable-linger because it needs to happen before systemd is loaded.
