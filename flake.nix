@@ -44,7 +44,7 @@
     template-haskell-reload.url = "github:NorfairKing/template-haskell-reload";
     template-haskell-reload.flake = false;
     openapi-code-generator.url = "github:Haskell-OpenAPI-Code-Generator/Haskell-OpenAPI-Client-Code-Generator?ref=flake";
-    autorecorder.url = "github:NorfairKing/autorecorder?ref=flake";
+    autorecorder.url = "github:NorfairKing/autorecorder";
     autorecorder.flake = false;
     linkcheck.url = "github:NorfairKing/linkcheck";
     linkcheck.flake = false;
@@ -168,45 +168,45 @@
             flakeUnderTest = self;
             flakeOverTest = get-flake smos-latest-release;
           };
-          coverage-report = pkgs.dekking.makeCoverageReport {
-            name = "test-coverage-report";
-            packages = [
-              "smos"
-              "smos-api"
-              "smos-archive"
-              "smos-calendar-import"
-              "smos-client"
-              "smos-cursor"
-              "smos-data"
-              "smos-directory"
-              "smos-github"
-              "smos-jobhunt"
-              "smos-notify"
-              "smos-query"
-              "smos-report"
-              "smos-report-cursor"
-              "smos-scheduler"
-              "smos-server"
-              "smos-single"
-              # "smos-stripe-client" # No need for coverage for generated code
-              "smos-sync-client"
-              "smos-web-server"
-              "smos-web-style"
-            ];
-            # No need for coverables for test packages
-            coverage = [
-              "smos-api-gen"
-              "smos-cursor-gen"
-              "smos-data-gen"
-              "smos-directory-gen"
-              "smos-report-cursor-gen"
-              "smos-report-gen"
-              "smos-server-gen"
-              "smos-sync-client-gen"
-              # Coverage for docs site is not interesting, but it runs parts of the rest
-              "smos-docs-site"
-            ];
-          };
+          # coverage-report = pkgs.dekking.makeCoverageReport {
+          #   name = "test-coverage-report";
+          #   packages = [
+          #     "smos"
+          #     "smos-api"
+          #     "smos-archive"
+          #     "smos-calendar-import"
+          #     "smos-client"
+          #     "smos-cursor"
+          #     "smos-data"
+          #     "smos-directory"
+          #     "smos-github"
+          #     "smos-jobhunt"
+          #     "smos-notify"
+          #     "smos-query"
+          #     "smos-report"
+          #     "smos-report-cursor"
+          #     "smos-scheduler"
+          #     "smos-server"
+          #     "smos-single"
+          #     # "smos-stripe-client" # No need for coverage for generated code
+          #     "smos-sync-client"
+          #     "smos-web-server"
+          #     "smos-web-style"
+          #   ];
+          #   # No need for coverables for test packages
+          #   coverage = [
+          #     "smos-api-gen"
+          #     "smos-cursor-gen"
+          #     "smos-data-gen"
+          #     "smos-directory-gen"
+          #     "smos-report-cursor-gen"
+          #     "smos-report-gen"
+          #     "smos-server-gen"
+          #     "smos-sync-client-gen"
+          #     # Coverage for docs site is not interesting, but it runs parts of the rest
+          #     "smos-docs-site"
+          #   ];
+          # };
           pre-commit = pre-commit-hooks.lib.${system}.run {
             src = ./.;
             hooks = {

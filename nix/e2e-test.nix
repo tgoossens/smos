@@ -18,12 +18,6 @@ with lib;
 let
   # Server-side configuration
   serverModule = flakeOverTest.nixosModules.${system}.default;
-  commonServerConfig = {
-    imports = [
-      serverModule
-    ];
-    stateVersion = "23.05";
-  };
 
   docs-port = 8001;
   api-port = 8002;
@@ -239,8 +233,9 @@ in
   nodes = {
     apiserver = {
       imports = [
-        commonServerConfig
+        serverModule
       ];
+      system.stateVersion = "23.05";
       time.timeZone = "Europe/Zurich";
       services.smos.production = {
         enable = true;
@@ -261,8 +256,9 @@ in
     };
     webserver = {
       imports = [
-        commonServerConfig
+        serverModule
       ];
+      system.stateVersion = "23.05";
       services.smos.production = {
         enable = true;
         web-server = {
@@ -276,8 +272,9 @@ in
     };
     docsserver = {
       imports = [
-        commonServerConfig
+        serverModule
       ];
+      system.stateVersion = "23.05";
       services.smos.production = {
         enable = true;
         docs-site = {
@@ -292,6 +289,7 @@ in
       imports = [
         home-manager
       ];
+      system.stateVersion = "23.05";
       users.users = mapAttrs makeTestUser testUsers;
       system.activationScripts = {
         # We must enable lingering so that the Systemd User D-Bus is enabled.
@@ -320,6 +318,7 @@ in
       imports = [
         e2eTestingModule
       ];
+      system.stateVersion = "23.05";
       services.smos.production.end-to-end-testing = {
         enable = true;
         api-server = {
