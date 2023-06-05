@@ -23,7 +23,7 @@
     mergeful.flake = false;
     looper.url = "github:NorfairKing/looper";
     looper.flake = false;
-    cursor.url = "github:NorfairKing/cursor?ref=flake";
+    cursor.url = "github:NorfairKing/cursor";
     cursor.flake = false;
     cursor-brick.url = "github:NorfairKing/cursor-brick?ref=flake";
     cursor-brick.flake = false;
@@ -176,6 +176,7 @@
               "smos-archive"
               "smos-calendar-import"
               "smos-client"
+              "smos-cursor"
               "smos-data"
               "smos-directory"
               "smos-github"
@@ -194,9 +195,6 @@
             ];
             # # No need for coverables for test packages
             coverage = [
-              # Lots of trouble with 'focusPossibleDeleteOrUpdate'
-              # TODO see if we can fix this by monomorphising that function
-              "smos-cursor"
               "smos-api-gen"
               "smos-cursor-gen"
               "smos-data-gen"

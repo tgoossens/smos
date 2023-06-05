@@ -52,16 +52,15 @@
     "cursor": {
       "flake": false,
       "locked": {
-        "lastModified": 1666975590,
-        "narHash": "sha256-jq4Lx3vCaoT30CfsxbLnwYyaH3FynylspOPhAhoDbVo=",
+        "lastModified": 1685977767,
+        "narHash": "sha256-T3B2VUBvCvNGZ2Toa1FnvregOP2tFS3KnGr0GAF7nm4=",
         "owner": "NorfairKing",
         "repo": "cursor",
-        "rev": "967dba32b9362351600c91afc29a270b0e529fe6",
+        "rev": "ae8727c0109d0706019413b36095b50541f37e5a",
         "type": "github"
       },
       "original": {
         "owner": "NorfairKing",
-        "ref": "flake",
         "repo": "cursor",
         "type": "github"
       }
