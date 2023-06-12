@@ -16,6 +16,7 @@ let
 
 in
 {
+  fcitx-engines = final.fcitx5;
   smosCasts =
     let
       castsDir = ../smos-docs-site/content/casts;

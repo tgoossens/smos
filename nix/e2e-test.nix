@@ -40,6 +40,7 @@ let
     programs.smos = {
       enable = true;
     };
+    systemd.user.startServices = "sd-switch";
   };
 
   testUsers = builtins.mapAttrs (name: config: recursiveUpdate commonClientConfig config) {
@@ -113,16 +114,21 @@ let
   # The strange formatting is because of the stupid linting that nixos tests do
   commonTestScript = username: userConfig: optionalString (userConfig.programs.smos.enable or false) ''
 
+    # Show the user units
+    (_, statusout_${username}) = client.systemctl("list-units 'smos-*'", user="${username}")
+    print(statusout_${username})
+
     # Wait for the test user to be activated.
     client.wait_for_unit("home-manager-${username}.service")
 
     # Test that the config file exists.
-    out = client.succeed(su("${username}", "cat ~/.config/smos/config.yaml"))
-    print(out)
+    config_${username} = client.succeed(su("${username}", "cat ~/.config/smos/config.yaml"))
+    print(config_${username})
 
     # Make sure the user can run the smos commands.
     client.succeed(su("${username}", "smos --help"))
     client.succeed(su("${username}", "smos-archive --help"))
+    client.succeed(su("${username}", "smos-jobhunt --help"))
     client.succeed(su("${username}", "smos-query --help"))
     client.succeed(su("${username}", "smos-single --help"))
 
@@ -136,8 +142,8 @@ let
     client.get_unit_info("smos-backup.timer", user="${username}")
     
     # Test that the local backup service works.
-    (c, _) = client.systemctl("start --wait smos-backup.service", user="${username}")
-    assert c == 0;'';
+    backup_status_${username} = client.systemctl("start --wait smos-backup.service", user="${username}")[0]
+    assert backup_status_${username} == 0'';
 
   syncTestScript = username: userConfig: optionalString (userConfig.programs.smos.sync.enable or false) ''
 
@@ -156,8 +162,8 @@ let
     client.get_unit_info("smos-sync.timer", user="${username}")
 
     # Test that the sync service works.
-    (c, _) = client.systemctl("start --wait smos-sync.service", user="${username}")
-    assert c == 0;'';
+    sync_status_${username} = client.systemctl("start --wait smos-sync.service", user="${username}")[0]
+    assert sync_status_${username} == 0'';
 
   schedulerTestScript = username: userConfig: optionalString (userConfig.programs.smos.scheduler.enable or false) ''
 
@@ -173,8 +179,8 @@ let
     client.get_unit_info("smos-scheduler.timer", user="${username}")
 
     # Test that the scheduler service works.
-    (c, _) = client.systemctl("start --wait smos-scheduler.service", user="${username}")
-    assert c == 0;'';
+    scheduler_status_${username} = client.systemctl("start --wait smos-scheduler.service", user="${username}")[0]
+    assert scheduler_status_${username} == 0'';
 
   # Tests for smos-calendar-import and its systemd service and timer
   calendarTestScript = username: userConfig: optionalString (userConfig.programs.smos.calendar.enable or false) ''
@@ -187,8 +193,8 @@ let
     client.get_unit_info("smos-calendar-import.timer", user="${username}")
 
     # Test that the scheduler service works.
-    (c, out) = client.systemctl("start --wait smos-calendar-import.service", user="${username}")
-    assert c == 0;'';
+    calendar_status_${username} = client.systemctl("start --wait smos-calendar-import.service", user="${username}")[0]
+    assert calendar_status_${username} == 0'';
 
   # Tests for smos-notify and its systemd service and timer
   notifyTestScript = username: userConfig: optionalString (userConfig.programs.smos.notify.enable or false) ''
@@ -206,8 +212,8 @@ let
     client.get_unit_info("smos-notify.timer", user="${username}")
 
     # Test that the notify service works.
-    (c, _) = client.systemctl("start --wait smos-notify.service", user="${username}")
-    assert c == 0;'';
+    notify_status_${username} = client.systemctl("start --wait smos-notify.service", user="${username}")[0]
+    assert notify_status_${username} == 0'';
 
   # Tests for smos-github
   githubTestScript = username: userConfig: optionalString (userConfig.programs.smos.github.enable or false) ''
@@ -289,11 +295,11 @@ in
       ];
       users.users = mapAttrs makeTestUser testUsers;
       system.stateVersion = "23.05";
+      # We must enable lingering so that the Systemd User D-Bus is enabled.
+      # We also cannot do this with loginctl enable-linger because it needs to happen before systemd is loaded.
+      # It would be nice if there were a nixos option for this.
+      # See https://github.com/NixOS/nixpkgs/issues/3702
       system.activationScripts = {
-        # We must enable lingering so that the Systemd User D-Bus is enabled.
-        # We also cannot do this with loginctl enable-linger because it needs to happen before systemd is loaded.
-        # It would be nice if there were a nixos option for this.
-        # See https://github.com/NixOS/nixpkgs/issues/3702
         enableLingering =
           let touchUserLinger = username: _: "touch /var/lib/systemd/linger/${username}";
           in
@@ -302,13 +308,14 @@ in
             rm -rf /var/lib/systemd/linger
             mkdir -p /var/lib/systemd/linger
             # enable for the subset of declared users
-            ${concatStringsSep "\n" (mapAttrsToList touchUserLinger config.users.users)}
+            ${lib.concatStringsSep "\n" (lib.mapAttrsToList touchUserLinger testUsers)}
           '';
       };
 
       home-manager = {
         useGlobalPkgs = true;
         useUserPackages = true;
+        verbose = true;
         users = mapAttrs makeTestUserHome testUsers;
       };
     };
@@ -340,11 +347,11 @@ in
     docsserver.start()
     client.start()
     e2etestclient.start()
-    apiserver.wait_for_unit("multi-user.target")
-    webserver.wait_for_unit("multi-user.target")
-    docsserver.wait_for_unit("multi-user.target")
-    client.wait_for_unit("multi-user.target")
-    e2etestclient.wait_for_unit("multi-user.target")
+    apiserver.wait_for_unit("default.target")
+    webserver.wait_for_unit("default.target")
+    docsserver.wait_for_unit("default.target")
+    client.wait_for_unit("default.target")
+    e2etestclient.wait_for_unit("default.target")
 
     print("starting end-to-end-tests")
     client.systemctl("start smos-api-server-end-to-end-test-production-production.timer")

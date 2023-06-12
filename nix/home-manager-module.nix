@@ -460,7 +460,6 @@ in
       };
       systemd.user =
         {
-          startServices = true;
           inherit services;
           inherit timers;
         };
